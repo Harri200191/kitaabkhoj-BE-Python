@@ -43,3 +43,14 @@ This is a simple example of a Python Flask server. It includes instructions on h
 5. **Contributing**
    
    Contributions are welcome! If you find a bug or have an improvement, please open an issue or create a pull request.
+
+6. **Usage**:
+   
+   Can be used in React frontend like:
+
+   ```code
+   const response = await fetch(http://localhost:5000/process_text?txt=${<input text>}); 
+   const data = await response.json();
+   const author = data.author
+   const book = data.book
+   ```
