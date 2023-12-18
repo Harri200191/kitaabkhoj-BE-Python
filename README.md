@@ -40,11 +40,17 @@ This is a simple example of a Python Flask server. It includes instructions on h
    
    Open your web browser and go to http://127.0.0.1:5000/. You should see a simple message indicating that the server is running.
 
-5. **Contributing**
+5. **Installing all the dependancies:**
+
+   ```code
+   pip install -r requirements.txt
+   ```
+
+## Contributing
    
    Contributions are welcome! If you find a bug or have an improvement, please open an issue or create a pull request.
 
-6. **Usage**:
+## Usage
    
    Can be used in React frontend like:
 
