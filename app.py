@@ -8,7 +8,9 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By 
 import time
-
+from dotenv import load_dotenv
+import os
+ 
 app = Flask(__name__)
 
 def is_person_name(text):
@@ -76,6 +78,40 @@ def search_wikipedia(text_lines):
             
     return None
 
+def is_valid_isbn(isbn): 
+    cleaned_isbn = re.sub(r'[-\s]', '', isbn) 
+    if re.match(r'^\d{9}[\dXx]|\d{13}$', cleaned_isbn):
+        return True
+    else:
+        return False
+    
+def get_isbn_by_title(title):
+
+    load_dotenv() 
+    api_key = os.getenv('GOOGLE_BOOKS_API_KEY')
+    base_url = 'https://www.googleapis.com/books/v1/volumes'
+ 
+    params = {
+        'q': f'intitle:{title}',
+        'key': api_key,
+    }
+ 
+    response = requests.get(base_url, params=params)
+ 
+    if response.status_code == 200:
+        data = response.json()
+ 
+        if 'items' in data: 
+            first_book = data['items'][0]
+            volume_info = first_book.get('volumeInfo', {})
+            industry_identifiers = volume_info.get('industryIdentifiers', [])
+
+            for identifier in industry_identifiers:
+                if identifier['type'] == 'ISBN_10' or identifier['type'] == 'ISBN_13':
+                    return identifier['identifier']
+    return None
+
+
 def get_wikipedia_previews(query): 
     driver = webdriver.Chrome()  
  
@@ -109,9 +145,12 @@ def process_text():
                 book = line
                 break
             else:
+                book = None
                 print("Nope") 
 
-        return jsonify({'author': author, 'book': book})
+        isbn = get_isbn_by_title(book)
+
+        return jsonify({'author': author, 'book': book, 'isbn': isbn})
     except Exception as e:
         return jsonify({'error': str(e)})
 
