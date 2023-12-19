@@ -6,11 +6,13 @@ from collections import Counter
 import re
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By 
 import time
 from dotenv import load_dotenv
 import os
- 
+
+
 app = Flask(__name__)
 
 def is_person_name(text):
@@ -109,10 +111,13 @@ def get_isbn_by_title(title):
             for identifier in industry_identifiers:
                 if identifier['type'] == 'ISBN_10' or identifier['type'] == 'ISBN_13':
                     return identifier['identifier']
+                
     return None
 
 
 def get_wikipedia_previews(query): 
+    options = Options()
+    options.add_argument("--headless")
     driver = webdriver.Chrome()  
  
     driver.get('https://en.wikipedia.org/w/index.php?title=Special:Search&profile=default&search=')
@@ -125,7 +130,7 @@ def get_wikipedia_previews(query):
  
     page_source = driver.page_source 
     soup = BeautifulSoup(page_source, 'html.parser')
-    preview_divs = soup.find_all('span', id= 'Books_and_stories')
+    preview_divs = soup.find_all('th', class_="infobox-above summary")
 
     if len(preview_divs) > 0:
         return True
@@ -137,9 +142,15 @@ def get_wikipedia_previews(query):
 def process_text():
     try:
         data = request.args.get('txt') 
-        text_lines = data.split('\n')
+        print(data)
+        data = data.lower()
+        text_lines = data.split(',')
 
+        print(text_lines)
+        
         author = process_text_lines(text_lines)
+        time.sleep(4)
+
         for line in text_lines:
             if (get_wikipedia_previews(line) == True):
                 book = line
@@ -149,10 +160,14 @@ def process_text():
                 print("Nope") 
 
         isbn = get_isbn_by_title(book)
+        
+        print("Author: ", author)
+        print("Book: ", book)
+        print("ISBN: ", isbn)
 
         return jsonify({'author': author, 'book': book, 'isbn': isbn})
     except Exception as e:
         return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=False)
