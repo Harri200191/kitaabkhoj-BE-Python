@@ -12,7 +12,6 @@ import time
 from dotenv import load_dotenv
 import os
 
-
 app = Flask(__name__)
 
 def is_person_name(text):
@@ -40,11 +39,20 @@ def count_occurrences(soup, target_word):
     return target_word_count, vicinity_counts
 
 def process_text_lines(text_lines): 
+    name_lis = []
+
     for line in text_lines:
         if is_person_name(line) == True:
-            return line
-        
-    return None
+            name_lis.append(line)
+
+    if len(name_lis) > 0:
+        fin_str = ""
+        for name in name_lis:
+            fin_str += name + " "
+    else:
+        return None
+    
+    return fin_str
 
 def search_wikipedia(text_lines): 
     time.sleep(1)
@@ -118,7 +126,7 @@ def get_isbn_by_title(title):
 def get_wikipedia_previews(query): 
     options = Options()
     options.add_argument("--headless")
-    driver = webdriver.Chrome()  
+    driver = webdriver.Chrome(options=options)  
  
     driver.get('https://en.wikipedia.org/w/index.php?title=Special:Search&profile=default&search=')
  
